@@ -3,7 +3,8 @@ package console
 import (
 	"bufio"
 	"fmt"
-	"github.com/df-mc/dragonfly/dragonfly/cmd"
+	"github.com/df-mc/dragonfly/server/cmd"
+	"github.com/sandertv/gophertunnel/minecraft/text"
 	"os"
 	"strings"
 	"time"
@@ -26,7 +27,7 @@ func StartConsole() {
 
 				if !ok {
 					output := &cmd.Output{}
-					output.Errorf("Unknown command %v. Try /help for a list of commands", commandName)
+					output.Errorf(text.ANSI(text.Colourf("<red>Unknown command. Try /help for a list of commands</red>")))
 					for _, e := range output.Errors() {
 						fmt.Println(e)
 					}

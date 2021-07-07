@@ -1,14 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"github.com/bradhe/stopwatch"
-	"github.com/df-mc/dragonfly/dragonfly"
-	"github.com/df-mc/dragonfly/dragonfly/player/chat"
-	"github.com/pelletier/go-toml"
+	"github.com/df-mc/dragonfly/server"
+	"github.com/df-mc/dragonfly/server/player/chat"
+	"github.com/provsalt/PM-DF/src/commands"
+	config2 "github.com/provsalt/PM-DF/src/config"
+	"github.com/provsalt/PM-DF/src/console"
+	"github.com/sandertv/gophertunnel/minecraft/text"
 	"github.com/sirupsen/logrus"
 	formatter "github.com/t-tomalak/logrus-easy-formatter"
-	"io/ioutil"
 	"os"
 )
 
@@ -19,53 +20,38 @@ func main() {
 		Level: logrus.DebugLevel,
 		Formatter: &formatter.Formatter{
 			TimestampFormat: "15:04:05",
-			LogFormat:       "[%time%] [Server thread/%lvl%]: %msg% \n",
+			LogFormat:       "[%time%] [Server/%lvl%]: %msg% \n",
 		},
 	}
 	log.Level = logrus.DebugLevel
 
 	chat.Global.Subscribe(chat.StdoutSubscriber{})
 
-	config, err := readConfig()
+	config, err := config2.ReadConfig()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	server := dragonfly.New(&config, log)
-	server.CloseOnProgramEnd()
-	if err := server.Start(); err != nil {
+	srv := server.New(&config, log)
+	srv.CloseOnProgramEnd()
+	if err := srv.Start(); err != nil {
 		log.Fatalln(err)
 	}
-
+	if config.Server.AuthEnabled {
+		log.Info("Online mode is enabled. The server will verify that players are authenticated to Xbox Live.")
+	} else {
+		log.Warn(text.ANSI(text.Colourf("<yellow>Online mode is disabled. The server will not verify that players are authenticated to Xbox Live.</yellow>")))
+	}
 	watch.Stop()
 	log.Infof("Done (%v): For help, type \"help\" or \"?\" \n", watch.Milliseconds())
-
+	console.StartConsole()
+	commands.Register()
 	for {
-		if _, err := server.Accept(); err != nil {
+		p, err := srv.Accept()
+
+		if err != nil {
 			return
 		}
+		log.Infof(text.ANSI(text.Colourf("<aqua>%s</aqua> [/%s] logged in with entity %d at (%s, %d, %d, %d)", p.Name(), p.Addr().String(), len(srv.World().Entities()), p.World().Name(), int(p.Position().X()), int(p.Position().Y()), int(p.Position().Z()))))
 	}
-}
-
-// readConfig reads the configuration from the config.toml file, or creates the file if it does not yet exist.
-func readConfig() (dragonfly.Config, error) {
-	c := dragonfly.DefaultConfig()
-	if _, err := os.Stat("config.toml"); os.IsNotExist(err) {
-		data, err := toml.Marshal(c)
-		if err != nil {
-			return c, fmt.Errorf("failed encoding default config: %v", err)
-		}
-		if err := ioutil.WriteFile("config.toml", data, 0644); err != nil {
-			return c, fmt.Errorf("failed creating config: %v", err)
-		}
-		return c, nil
-	}
-	data, err := ioutil.ReadFile("config.toml")
-	if err != nil {
-		return c, fmt.Errorf("error reading config: %v", err)
-	}
-	if err := toml.Unmarshal(data, &c); err != nil {
-		return c, fmt.Errorf("error decoding config: %v", err)
-	}
-	return c, nil
 }
