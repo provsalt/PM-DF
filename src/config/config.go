@@ -2,8 +2,11 @@ package config
 
 import (
 	"fmt"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/df-mc/dragonfly/server"
 	"github.com/pelletier/go-toml"
+	"github.com/provsalt/PM-DF/src/wizard"
+	"log"
 	"os"
 )
 
@@ -18,12 +21,10 @@ type Config struct {
 func ReadConfig() (server.Config, error) {
 	c := server.DefaultConfig()
 	if _, err := os.Stat("config.toml"); os.IsNotExist(err) {
-		data, err := toml.Marshal(c)
-		if err != nil {
-			return c, fmt.Errorf("failed encoding default config: %v", err)
-		}
-		if err := os.WriteFile("config.toml", data, 0644); err != nil {
-			return c, fmt.Errorf("failed creating config: %v", err)
+		p := tea.NewProgram(wizard.InitialModel())
+
+		if err := p.Start(); err != nil {
+			log.Fatal(err)
 		}
 		return c, nil
 	}
