@@ -9,7 +9,7 @@
   SaveData = true
 
 [Server]
-  AuthEnabled = false
+  AuthEnabled = true
   JoinMessage = "%v has joined the game"
   Name = "Dragonfly Server"
   QuitMessage = "%v has left the game"
