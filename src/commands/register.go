@@ -8,5 +8,4 @@ import (
 // Register registers all commands in the commands directory
 func Register() {
 	cmd.Register(cmd.New("version", "Check the server version", []string{"ver"}, version.Version{}))
-
 }
