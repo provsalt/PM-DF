@@ -9,31 +9,31 @@ import (
 	"os"
 )
 
-type model struct {
+type Model struct {
 	textInput textinput.Model
 	err       error
 }
 type tickMsg struct{}
 type errMsg error
 
-func InitialModel() model {
+func InitialModel() Model {
 	ti := textinput.NewModel()
 	ti.Placeholder = "y/N"
 	ti.Focus()
 	ti.CharLimit = 1
 	ti.Width = 20
 
-	return model{
+	return Model{
 		textInput: ti,
 		err:       nil,
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -51,7 +51,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					panic("failed creating config")
 				}
 				return m, tea.Quit
-			}else {
+			} else {
 				return m, tea.Quit
 			}
 		}
@@ -66,7 +66,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m Model) View() string {
 	return fmt.Sprintf(
 		"Do you wish to skip the setup wizard? Setup wizard is unfinished. %s",
 		m.textInput.View(),
