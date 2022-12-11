@@ -37,7 +37,7 @@ func main() {
 
 	srv.Listen()
 
-	if config.AuthDisabled {
+	if !config.AuthDisabled {
 		log.Info("Online mode is enabled. The server will verify that players are authenticated to Xbox Live.")
 	} else {
 		log.Warn(text.ANSI(text.Colourf("<yellow>Online mode is disabled. The server will not verify that players are authenticated to Xbox Live.</yellow>")))
